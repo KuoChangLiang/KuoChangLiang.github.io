@@ -20,6 +20,8 @@ nav a:focus-visible::after,nav [aria-current=page]::after,.section-heading a:foc
 .hero-caption{transition:border-color .18s ease-out}
 .work-card:focus-visible .work-caption,.hero a:focus-visible .hero-caption{border-color:var(--ink)}
 @media(hover:hover){nav a:hover::after,.section-heading a:hover::after,.end-link a:hover::after,.detail-top>a:hover::after{opacity:1}.work-card:hover .work-caption,.hero a:hover .hero-caption{border-color:var(--ink)}}
+/* Section labels share the same quiet typography, including semantic headings. */
+.experience>h2.eyebrow{font-size:12px;letter-spacing:.1em;font-weight:400;margin:0;color:var(--muted)}
 /* Chronology, equal-height covers, and a restrained bilingual type system. */
 .hero{padding-top:40px}.hero-caption{display:flex;align-items:baseline;gap:18px}.hero-caption>.work-number{margin-right:0}.hero-caption h1{font-size:24px;font-weight:400;letter-spacing:.035em}.translation{margin-left:34px}.about-intro>.prose,.experience>div{grid-column:2}.page-heading h1{margin-top:0}.page-heading>.eyebrow+h1{margin-top:20px}.work-total{white-space:nowrap}
 @media(max-width:800px){.about-intro>.prose,.experience>div{grid-column:1}.hero{padding-top:28px}}
