@@ -43,5 +43,11 @@ async function render(){shell();const path=pagePath();
 function showError(e){$('#main').innerHTML=`<div class="empty"><h1>${t('暫時無法顯示','Temporarily unavailable')}</h1><p>${esc(e.message)}</p><button id="retry">${t('重新載入','Try again')}</button></div>`;$('#retry').onclick=()=>location.reload();}
 async function init(){try{if(location.hash.startsWith('#work/')){location.replace(href('/works/'+encodeURIComponent(location.hash.slice(6))));return;}if(['#home','#works','#about'].includes(location.hash)){location.replace(href(location.hash==='#home'?'/':'/'+location.hash.slice(1)));return;}data=await api('/api/public');await render();}catch(e){showError(e);}}
 document.addEventListener('error',e=>{if(e.target.tagName==='IMG'){e.target.classList.add('image-unavailable');e.target.alt=t('圖片暫時無法載入','Image temporarily unavailable');}},true);
+
+// A convenience restriction only: displayed images can still be captured or retrieved.
+for(const eventName of ['contextmenu','dragstart'])document.addEventListener(eventName,e=>{
+ const artwork=e.target instanceof Element&&e.target.closest('#main .hero-image,#main .work-image,#main .detail-hero,#main .detail-gallery figure');
+ if(artwork&&artwork.querySelector('img')&&!e.target.closest('figcaption'))e.preventDefault();
+});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='e'){e.preventDefault();location.href=sitePath('/admin');}});
 init();

@@ -138,4 +138,8 @@ input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
 }
 @media(prefers-reduced-motion:reduce){.hero-image img,.work-image img{transition:none}}
 
+/* Discourage direct image saving where supported; preserve scrolling and pinch zoom. */
+#main .hero-image,#main .work-image,#main .detail-hero img,#main .detail-gallery img{-webkit-touch-callout:none}
+#main img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+
 
