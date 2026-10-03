@@ -10,7 +10,7 @@ const name=w=>t(w.title_zh||w.title_en,w.title_en||w.title_zh);
 const secondary=w=>w.title_zh&&w.title_en?t(w.title_en,w.title_zh):'';
 const href=path=>{const u=new URL(sitePath(path),location.origin);u.searchParams.set('lang',lang);return u.pathname+u.search+u.hash;};
 const link=w=>href('/works/'+encodeURIComponent(w.id));
-const image=(m,cls='',lazy=true)=>m?`<img class="${cls}" src="${esc(m.url)}" alt="${esc(localized(m,'alt'))}" ${lazy?'loading="lazy"':'fetchpriority="high"'} decoding="async">`:'';
+const image=(m,cls='',lazy=true)=>m?`<img draggable="false" class="${cls}" src="${esc(m.url)}" alt="${esc(localized(m,'alt'))}" ${lazy?'loading="lazy"':'fetchpriority="high"'} decoding="async">`:'';
 let data,year=new URLSearchParams(location.search).get('year')||'';
 function card(w,i){return `<a class="work-card" href="${link(w)}"><div class="work-image">${image(w.media[0])}</div><div class="work-caption"><div><span class="work-number">${String(i+1).padStart(2,'0')}</span><span>${esc(name(w))}</span>${secondary(w)?`<span class="translation">${esc(secondary(w))}</span>`:''}</div><span>${esc(w.year)}</span></div></a>`;}
 function videoId(url){try{const u=new URL(url);if(u.hostname==='youtu.be')return u.pathname.slice(1).match(/^[\w-]{11}$/)?.[0];if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname))return(u.searchParams.get('v')||u.pathname.split('/').pop()).match(/^[\w-]{11}$/)?.[0];}catch{}return '';}
@@ -47,7 +47,7 @@ document.addEventListener('error',e=>{if(e.target.tagName==='IMG'){e.target.clas
 // A convenience restriction only: displayed images can still be captured or retrieved.
 for(const eventName of ['contextmenu','dragstart'])document.addEventListener(eventName,e=>{
  const artwork=e.target instanceof Element&&e.target.closest('#main .hero-image,#main .work-image,#main .detail-hero,#main .detail-gallery figure');
- if(artwork&&artwork.querySelector('img')&&!e.target.closest('figcaption'))e.preventDefault();
-});
+ if(artwork&&(artwork.matches('img')||artwork.querySelector('img'))&&!e.target.closest('figcaption'))e.preventDefault();
+},{capture:true});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='e'){e.preventDefault();location.href=sitePath('/admin');}});
 init();
