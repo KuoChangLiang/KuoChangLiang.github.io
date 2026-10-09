@@ -1,9 +1,10 @@
 import {experienceSettings} from './experience.js';
 import {api, sitePath, pagePath} from './runtime.js';
+import {createLanguageState} from './language.js';
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let saved='zh';try{saved=localStorage.getItem('artist-language')||'zh';}catch{}
-let lang=new URLSearchParams(location.search).get('lang')||saved;if(!['zh','en'].includes(lang))lang='zh';
+const language=createLanguageState(window,value=>{lang=value;if(data)void refreshLanguage();});
+let lang=language.value;
 const t=(zh,en)=>lang==='en'?en:zh;
 const localized=(item,key)=>lang==='en'?item?.[key+'_en']||item?.[key]||'':item?.[key]||item?.[key+'_en']||'';
 const name=w=>t(w.title_zh||w.title_en,w.title_en||w.title_zh);
@@ -12,6 +13,10 @@ const href=path=>{const u=new URL(sitePath(path),location.origin);u.searchParams
 const link=w=>href('/works/'+encodeURIComponent(w.id));
 const image=(m,cls='',lazy=true)=>m?`<img draggable="false" class="${cls}" src="${esc(m.url)}" alt="${esc(localized(m,'alt'))}" ${lazy?'loading="lazy"':'fetchpriority="high"'} decoding="async">`:'';
 let data,year=new URLSearchParams(location.search).get('year')||'';
+async function refreshLanguage(){
+ const scroll=scrollY,focusLanguage=document.activeElement?.dataset?.language;
+ try{await render();window.scrollTo(0,scroll);if(focusLanguage)document.querySelector(`[data-language="${lang}"]`)?.focus({preventScroll:true});}catch(e){showError(e);}
+}
 function card(w,i){return `<a class="work-card" href="${link(w)}"><div class="work-image">${image(w.media[0])}</div><div class="work-caption"><div><span class="work-number">${String(i+1).padStart(2,'0')}</span><span>${esc(name(w))}</span>${secondary(w)?`<span class="translation">${esc(secondary(w))}</span>`:''}</div><span>${esc(w.year)}</span></div></a>`;}
 function videoId(url){try{const u=new URL(url);if(u.hostname==='youtu.be')return u.pathname.slice(1).match(/^[\w-]{11}$/)?.[0];if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname))return(u.searchParams.get('v')||u.pathname.split('/').pop()).match(/^[\w-]{11}$/)?.[0];}catch{}return '';}
 function caption(m){return m&&(localized(m,'caption')||m.credit)?`<figcaption>${esc(localized(m,'caption'))}${m.credit?`<span>${t('攝影','Photography')} / ${esc(m.credit)}</span>`:''}</figcaption>`:'';}
@@ -22,7 +27,7 @@ function detail(w,preview=false){const id=videoId(w.youtube_url),video=id?`<sect
 function shell(){const s=data.settings;document.documentElement.lang=t('zh-Hant','en');document.title=t(s.artist_name_zh,s.artist_name_en)+' — '+t('作品網站','Artist portfolio');document.querySelector('meta[name="description"]').content=t('郭展良的作品、創作論述與展覽經歷。','Artworks, artist statements and exhibition history of Chan-Liang Kuo.');
  $('#header').innerHTML=`<a class="identity" href="${href('/')}"><span>${esc(t(s.artist_name_zh,s.artist_name_en))}</span><span>${esc(t(s.artist_name_en,s.artist_name_zh))}</span></a><div class="header-controls"><nav aria-label="${t('主選單','Main navigation')}"><a href="${href('/works')}" ${pagePath().includes('works')?'aria-current="page"':''}>${t('作品','Works')}</a><a href="${href('/about')}" ${pagePath()==='/about'?'aria-current="page"':''}>${t('關於','About')}</a></nav><div class="language-switch" role="group" aria-label="${t('網站語言','Website language')}"><button data-language="zh" lang="zh-Hant" aria-pressed="${lang==='zh'}">中</button><span aria-hidden="true">/</span><button data-language="en" lang="en" aria-pressed="${lang==='en'}">EN</button></div></div>`;
  $('#footer').innerHTML=`<span>© ${new Date().getFullYear()} ${esc(s.artist_name_en)}</span><div>${s.email?`<a href="mailto:${esc(s.email)}">${esc(s.email)}</a>`:''}</div>`;
- document.querySelectorAll('[data-language]').forEach(b=>b.onclick=async()=>{if(lang===b.dataset.language)return;const scroll=scrollY;lang=b.dataset.language;try{localStorage.setItem('artist-language',lang);}catch{}const u=new URL(location.href);u.searchParams.set('lang',lang);history.replaceState(null,'',u);try{await render();window.scrollTo(0,scroll);document.querySelector(`[data-language="${lang}"]`).focus({preventScroll:true});}catch(e){showError(e);}});
+ document.querySelectorAll('[data-language]').forEach(b=>b.onclick=()=>language.select(b.dataset.language));
 }
 function drawWorks(){let index=0;const works=data.works.filter(w=>!year||w.year===year),years=[...new Set(works.map(w=>w.year))].sort((a,b)=>Number(b)-Number(a));
  $('#works-grid').innerHTML=works.length?years.map((y,i)=>{const group=works.filter(w=>w.year===y);return `<section class="year-section" aria-labelledby="year-${i}"><div class="year-heading"><h2 id="year-${i}">${esc(y||t('未標年份','Undated'))}</h2></div><div class="year-works ${group.length===1?'single-work':''}">${group.map(w=>card(w,index++)).join('')}</div></section>`;}).join(''):`<p class="empty">${t('這個年份尚無作品。','No works for this year.')}</p>`;
